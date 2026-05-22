@@ -3,18 +3,90 @@ import React, { useMemo, useState } from "react";
 let sharedContext = null;
 
 const presets = [
-  { id: "msg-soft", group: "Message", name: "Soft alien notification", description: "轻、短、带一点异世界感，不像手机默认铃声。" },
-  { id: "msg-glass", group: "Message", name: "Glass pulse", description: "更冷一点，像屏幕自己亮起。" },
-  { id: "msg-static", group: "Message", name: "Static text ping", description: "短信出现前的一小段静电感。" },
-  { id: "dice-wood", group: "Dice", name: "Soft dice taps", description: "克制的骰子轻敲，不做电玩城按钮感。" },
-  { id: "dice-digital", group: "Dice", name: "Digital roll", description: "偏网页/科幻一点，但比刚刚的 beep 柔和。" },
-  { id: "dice-hollow", group: "Dice", name: "Hollow table roll", description: "低一点、空一点，像骰子落在旧桌面。" },
-  { id: "door-low", group: "Door", name: "Low threshold hum", description: "拉门时的低频空气震动。" },
-  { id: "door-wood", group: "Door", name: "Old wood breath", description: "不像恐怖门，更像旧木头醒过来。" },
-  { id: "door-portal", group: "Door", name: "Golden crack opens", description: "门缝打开、金光溢出的短音。" },
-  { id: "success-soft", group: "Result", name: "Quiet success", description: "判定成功，但不游戏化。" },
-  { id: "fail-soft", group: "Result", name: "Quiet failure", description: "失败提示，压低但不吓人。" },
-  { id: "text-begin", group: "Text", name: "Message begins typing", description: "短信开始打字前的一下，很轻。" },
+  {
+    id: "msg-soft",
+    group: "Message",
+    name: "Soft alien notification",
+    description: "轻、短、带一点异世界感，不像手机默认铃声。",
+    color: "sky",
+  },
+  {
+    id: "msg-glass",
+    group: "Message",
+    name: "Glass pulse",
+    description: "更冷一点，像屏幕自己亮起。",
+    color: "cyan",
+  },
+  {
+    id: "msg-static",
+    group: "Message",
+    name: "Static text ping",
+    description: "短信出现前的一小段静电感。",
+    color: "violet",
+  },
+  {
+    id: "dice-wood",
+    group: "Dice",
+    name: "Soft dice taps",
+    description: "克制的骰子轻敲，不做电玩城按钮感。",
+    color: "amber",
+  },
+  {
+    id: "dice-digital",
+    group: "Dice",
+    name: "Digital roll",
+    description: "偏网页/科幻一点，但比刚刚的 beep 柔和。",
+    color: "fuchsia",
+  },
+  {
+    id: "dice-hollow",
+    group: "Dice",
+    name: "Hollow table roll",
+    description: "低一点、空一点，像骰子落在旧桌面。",
+    color: "orange",
+  },
+  {
+    id: "door-low",
+    group: "Door",
+    name: "Low threshold hum",
+    description: "拉门时的低频空气震动。",
+    color: "rose",
+  },
+  {
+    id: "door-wood",
+    group: "Door",
+    name: "Old wood breath",
+    description: "不像恐怖门，更像旧木头醒过来。",
+    color: "emerald",
+  },
+  {
+    id: "door-portal",
+    group: "Door",
+    name: "Golden crack opens",
+    description: "门缝打开、金光溢出的短音。",
+    color: "yellow",
+  },
+  {
+    id: "success-soft",
+    group: "Result",
+    name: "Quiet success",
+    description: "判定成功，但不游戏化。",
+    color: "lime",
+  },
+  {
+    id: "fail-soft",
+    group: "Result",
+    name: "Quiet failure",
+    description: "失败提示，压低但不吓人。",
+    color: "slate",
+  },
+  {
+    id: "text-begin",
+    group: "Text",
+    name: "Message begins typing",
+    description: "短信开始打字前的一下，很轻。",
+    color: "indigo",
+  },
 ];
 
 function getAudioContext() {
@@ -157,7 +229,11 @@ function playPreset(id, masterVolume) {
 
 function Pill({ children, active, onClick }) {
   return (
-    <button type="button" onClick={onClick} className={`rounded-full border px-3 py-1.5 text-xs transition ${active ? "border-amber-200/40 bg-amber-200/15 text-amber-50" : "border-white/10 bg-white/5 text-slate-400 hover:bg-white/10 hover:text-slate-200"}`}>
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-full border px-3 py-1.5 text-xs transition ${active ? "border-amber-200/40 bg-amber-200/15 text-amber-50" : "border-white/10 bg-white/5 text-slate-400 hover:bg-white/10 hover:text-slate-200"}`}
+    >
       {children}
     </button>
   );
