@@ -287,7 +287,7 @@ function CheckResultModal({ check, onClose }) {
   const isBlocked = check.statusLabel === "受阻";
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center p-5">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-5 text-slate-100">
       <div className="absolute inset-0 bg-slate-950/35 backdrop-blur-[12px] backdrop-saturate-125" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_32%_20%,rgba(125,211,252,.18),transparent_32%),radial-gradient(circle_at_70%_72%,rgba(251,191,36,.12),transparent_34%)]" />
       <div className="absolute inset-x-0 top-0 h-32 bg-white/[0.035] blur-2xl" />
@@ -301,7 +301,7 @@ function CheckResultModal({ check, onClose }) {
           <div className="mb-4">
             <div className="text-[10px] uppercase tracking-[0.28em] text-sky-100/55">dice check</div>
             <div className="mt-2 flex items-center justify-between gap-3">
-              <h2 className="text-2xl font-semibold tracking-tight">本次检定</h2>
+              <h2 className="text-2xl font-semibold tracking-tight text-slate-100">本次检定</h2>
               <div className={`mr-2 shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold ${isBlocked ? "border-amber-200/20 bg-amber-200/10 text-amber-50" : "border-sky-200/20 bg-sky-200/10 text-sky-50"}`}>
                 {check.statusLabel}
               </div>
