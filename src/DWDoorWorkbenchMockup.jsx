@@ -18,8 +18,8 @@ const nodes = {
     ],
     notes: {
       purpose: "玩家第一次遇见“不可能存在的门”，并决定要承认多少好奇心。",
-      interactions: ["先选择行动，再进入骰子判定", "玩家可手动输入 d20 点数，也可随机掷骰", "判定成功/失败会写入跑团记录并推进节点"],
-      variables: ["调查时：好奇心 +1", "后退失败时：恐惧 +2", "触碰门把手时：时间静电明显上升"],
+      interactions: ["先选择行动，再进入骰子判定", "玩家可手动输入 d20 点数，也可随机掷骰", "判定顺利/受阻会写入跑团记录并推进节点"],
+      variables: ["调查时：好奇心 +1", "后退受阻时：恐惧 +2", "触碰门把手时：时间静电明显上升"],
       audio: ["老旧灯管的电流嗡鸣", "通风口里隐约的雨声", "门后低沉的机械呼吸声"],
       build: ["不需要插画", "蓝门是纯 CSS 元素", "剧情节点写在可编辑 JSON 里"],
     },
@@ -40,7 +40,7 @@ const nodes = {
     ],
     notes: {
       purpose: "调查分支。让玩家意识到这扇门不是死物，它会回应。",
-      interactions: ["这是骰子机制最适合出现的节点", "成功时听见更完整的人声片段", "失败时走廊会用玩家自己的声音回应"],
+      interactions: ["这是骰子机制最适合出现的节点", "顺利时听见更完整的人声片段", "受阻时走廊会用玩家自己的声音回应"],
       variables: ["好奇心 +1", "时间静电 +1", "如果玩家敲回去：门的信任 +1"],
       audio: ["木门敲击声", "旧电视雪花屏噪声", "非常远的女性声音"],
       build: ["给门缝加一个很轻的敲击动画", "记录区显示检定结果", "可作为骰子机制的第一个教学点"],
@@ -163,7 +163,7 @@ function getCheck(choice) {
     stepback: { name: "冷静", dc: 9, success: "你稳住呼吸，后退时没有把目光从门上移开。", fail: "你退得太快，走廊的出口标识在你身后改变了方向。" },
     door: { name: "定神", dc: 8, success: "你把自己重新拉回当前的走廊。", fail: "你以为自己回到了原点，但墙上的影子不太对。" },
   };
-  return table[choice.next] || { name: "行动", dc: 10, success: "行动成功。", fail: "行动成功，但代价变得更明显。" };
+  return table[choice.next] || { name: "行动", dc: 10, success: "行动推进。", fail: "行动推进，但代价变得更明显。" };
 }
 
 function getDelta(next, success) {
@@ -278,6 +278,73 @@ function SceneMotif({ nodeId, active, tags }) {
           <Badge key={tag}>{tag}</Badge>
         ))}
       </div>
+    </div>
+  );
+}
+
+function CheckResultModal({ check, onClose }) {
+  if (!check) return null;
+  const isBlocked = check.statusLabel === "受阻";
+
+  return (
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-5">
+      <div className="absolute inset-0 bg-slate-950/35 backdrop-blur-[12px] backdrop-saturate-125" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_32%_20%,rgba(125,211,252,.18),transparent_32%),radial-gradient(circle_at_70%_72%,rgba(251,191,36,.12),transparent_34%)]" />
+      <div className="absolute inset-x-0 top-0 h-32 bg-white/[0.035] blur-2xl" />
+
+      <section className="relative w-full max-w-[480px] overflow-hidden rounded-[2rem] border border-white/15 bg-slate-900/55 p-4 shadow-[0_28px_90px_rgba(0,0,0,.55)] backdrop-blur-xl md:p-5">
+        <div className="pointer-events-none absolute -left-20 -top-24 h-56 w-56 rounded-full bg-sky-200/16 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 right-0 h-56 w-56 rounded-full bg-amber-200/10 blur-3xl" />
+        <div className="pointer-events-none absolute inset-0 rounded-[2rem] border border-white/10" />
+
+        <div className="relative w-full">
+          <div className="mb-4">
+            <div className="text-[10px] uppercase tracking-[0.28em] text-sky-100/55">dice check</div>
+            <div className="mt-2 flex items-center justify-between gap-3">
+              <h2 className="text-2xl font-semibold tracking-tight">本次检定</h2>
+              <div className={`mr-2 shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold ${isBlocked ? "border-amber-200/20 bg-amber-200/10 text-amber-50" : "border-sky-200/20 bg-sky-200/10 text-sky-50"}`}>
+                {check.statusLabel}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-2 rounded-3xl border border-white/10 bg-black/20 p-4 text-sm leading-6 text-slate-300">
+            <div className="flex justify-between gap-4">
+              <span className="text-slate-500">行动</span>
+              <span className="font-medium text-slate-100">{check.action}</span>
+            </div>
+            <div className="flex justify-between gap-4">
+              <span className="text-slate-500">检定</span>
+              <span className="font-medium text-slate-100">{check.checkName}</span>
+            </div>
+            <div className="flex justify-between gap-4">
+              <span className="text-slate-500">骰点</span>
+              <span className="font-medium text-slate-100">d20 = {check.roll}</span>
+            </div>
+            {check.bonus !== 0 && (
+              <div className="flex justify-between gap-4">
+                <span className="text-slate-500">加值</span>
+                <span className="font-medium text-slate-100">{check.bonus >= 0 ? `+${check.bonus}` : check.bonus}</span>
+              </div>
+            )}
+            <div className="flex justify-between gap-4">
+              <span className="text-slate-500">合计</span>
+              <span className="font-medium text-slate-100">{check.total}</span>
+            </div>
+          </div>
+
+          {check.resultText && (
+            <div className="mt-4 rounded-3xl border border-amber-200/15 bg-amber-200/[0.06] p-4">
+              <div className="mb-2 text-[10px] uppercase tracking-[0.24em] text-amber-100/60">result text</div>
+              <p className="text-base leading-7 text-amber-50/95">{check.resultText}</p>
+            </div>
+          )}
+
+          <button type="button" onClick={onClose} className="mt-5 h-12 w-full rounded-2xl bg-sky-200 text-sm font-semibold text-slate-950 transition hover:bg-sky-100">
+            继续
+          </button>
+        </div>
+      </section>
     </div>
   );
 }
@@ -495,7 +562,7 @@ export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
   const [logOrder, setLogOrder] = useState("oldest");
   const [localNow, setLocalNow] = useState(() => new Date());
   const [lastRoll, setLastRoll] = useState(null);
-  const [lastCheck, setLastCheck] = useState(null);
+  const [checkModal, setCheckModal] = useState(null);
   const [pendingChoice, setPendingChoice] = useState(null);
   const [rollInput, setRollInput] = useState("");
   const [rollError, setRollError] = useState("");
@@ -506,6 +573,7 @@ export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
   const [buildPassword, setBuildPassword] = useState("");
   const [buildPasswordError, setBuildPasswordError] = useState("");
   const chapterCloseTimer = useRef(null);
+  const storyTextRef = useRef(null);
   const abilityTotal = getAbilityTotal(abilities);
 
   useEffect(() => {
@@ -574,7 +642,7 @@ export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
     setPendingChoice(null);
     setRollInput("");
     setRollError("");
-    setLastCheck(null);
+    setCheckModal(null);
   }
 
   function returnToPageOne() {
@@ -597,7 +665,6 @@ export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
     setPendingChoice(choice);
     setRollInput("");
     setRollError("");
-    setLastCheck({ action: choice.label, name: check.name, dc: check.dc, status: "等待掷骰", timeLabel: formatLocalTime(localNow) });
     setLog((currentLog) => [
       ...currentLog,
       { who: "玩家", text: `准备行动：${choice.label}`, timeLabel: formatLocalTime(localNow) },
@@ -629,6 +696,7 @@ export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
     const resultText = success ? check.success : check.fail;
     const nextNode = nodes[pendingChoice.next] || node;
     const timeLabel = formatLocalTime(localNow);
+    const statusLabel = success ? "顺利" : "受阻";
 
     setStats((currentStats) => ({
       curiosity: Math.min(6, currentStats.curiosity + (delta.curiosity || 0)),
@@ -636,10 +704,10 @@ export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
       timeStatic: Math.min(6, currentStats.timeStatic + (delta.timeStatic || 0)),
     }));
     setLastRoll(roll);
-    setLastCheck({ action: pendingChoice.label, name: check.name, dc: check.dc, roll, bonus, total, status: success ? "成功" : "失败", resultText, timeLabel });
+    setCheckModal({ action: pendingChoice.label, checkName: check.name, dc: check.dc, roll, bonus, total, statusLabel, resultText, timeLabel });
     setLog((currentLog) => [
       ...currentLog,
-      { who: "骰子", text: mode === "搭建" ? `${check.name}检定：d20 = ${roll}，加值 ${bonus >= 0 ? "+" : ""}${bonus}，合计 ${total}，对抗 DC ${check.dc}，${success ? "成功" : "失败"}。` : `${check.name}检定：d20 = ${roll}，${bonus !== 0 ? `加值 ${bonus >= 0 ? "+" : ""}${bonus}，合计 ${total}，` : ""}${success ? "成功" : "失败"}。`, timeLabel },
+      { who: "骰子", text: mode === "搭建" ? `${check.name}检定：d20 = ${roll}，加值 ${bonus >= 0 ? "+" : ""}${bonus}，合计 ${total}，对抗 DC ${check.dc}，${statusLabel}。` : `${check.name}检定：d20 = ${roll}，${bonus !== 0 ? `加值 ${bonus >= 0 ? "+" : ""}${bonus}，合计 ${total}，` : ""}${statusLabel}。`, timeLabel },
       { who: "主持人", text: resultText, timeLabel },
       { who: "主持人", text: nextNode.text, timeLabel },
     ]);
@@ -647,6 +715,14 @@ export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
     setPendingChoice(null);
     setRollInput("");
     setRollError("");
+  }
+
+  function closeCheckModal() {
+    setCheckModal(null);
+    if (!window.matchMedia("(max-width: 1024px)").matches) return;
+    window.setTimeout(() => {
+      storyTextRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 120);
   }
 
   const navProps = {
@@ -704,6 +780,7 @@ export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
           </div>
         </div>
       )}
+      <CheckResultModal check={checkModal} onClose={closeCheckModal} />
 
       <div
         className="pointer-events-none fixed inset-0 opacity-[0.08]"
@@ -801,7 +878,7 @@ export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
 
               <div className="grid gap-5 xl:grid-cols-[0.45fr_1.55fr]">
                 <SceneMotif nodeId={node.id} active={doorActive} tags={node.atmosphere} />
-                <div className="flex flex-col justify-between rounded-3xl border border-white/10 bg-white/[0.035] p-5">
+                <div ref={storyTextRef} className="flex flex-col justify-between rounded-3xl border border-white/10 bg-white/[0.035] p-5">
                   <div>
                     <div className="mb-3 text-xs uppercase tracking-[0.24em] text-sky-100/50">{node.location}</div>
                     <p className="text-lg leading-8 text-slate-100/95">{node.text}</p>
@@ -904,33 +981,6 @@ export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
                   ))}
                 </div>
                 <p className="mt-2 text-[11px] leading-5 text-slate-500">开局已设定；结算时使用 d20 + 对应能力加值。</p>
-              </div>
-              <div className="mb-4 rounded-2xl border border-white/10 bg-black/15 p-3 text-sm leading-6 text-slate-300">
-                {lastCheck ? (
-                  <>
-                    <div>
-                      行动：<span className="text-slate-100">{lastCheck.action}</span>
-                    </div>
-                    <div>
-                      检定：<span className="text-slate-100">{lastCheck.name}</span>
-                      {mode === "搭建" ? ` · DC ${lastCheck.dc}` : ""}
-                    </div>
-                    <div>
-                      状态：<span className="text-amber-100">{lastCheck.status}</span>
-                      {lastCheck.roll ? ` · d20 = ${lastCheck.roll}` : ""}
-                      {lastCheck.roll && lastCheck.bonus !== 0 ? ` · 加值 ${lastCheck.bonus >= 0 ? "+" : ""}${lastCheck.bonus}` : ""}
-                      {lastCheck.roll ? ` · 合计 ${lastCheck.total}` : ""}
-                    </div>
-                    {lastCheck.timeLabel && (
-                      <div>
-                        时间：<span className="text-slate-100">{lastCheck.timeLabel}</span>
-                      </div>
-                    )}
-                    {lastCheck.resultText && <div className="mt-2 text-slate-400">{lastCheck.resultText}</div>}
-                  </>
-                ) : (
-                  "先选择一个行动，右侧会出现对应检定。"
-                )}
               </div>
               <div className="mb-2 text-xs uppercase tracking-[0.2em] text-violet-100/60">当前状态</div>
               <div className="space-y-3">
