@@ -553,6 +553,42 @@ function StartScreen({ abilities, setAbilities, onStart, navProps }) {
   );
 }
 
+function BuildGateModal({ buildPassword, buildPasswordError, setBuildPassword, setBuildPasswordError, submitBuildPassword, onCancel }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-sm rounded-3xl border border-white/10 bg-slate-950 p-5 shadow-2xl shadow-black/50">
+        <div className="text-xs uppercase tracking-[0.24em] text-sky-100/60">creator gate</div>
+        <h2 className="mt-2 text-2xl font-semibold">进入搭建模式</h2>
+        <p className="mt-2 text-sm leading-6 text-slate-400">请输入创作者密码。</p>
+        <input
+          value={buildPassword}
+          onChange={(event) => {
+            setBuildPassword(event.target.value);
+            setBuildPasswordError("");
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") submitBuildPassword();
+            if (event.key === "Escape") onCancel();
+          }}
+          autoFocus
+          type="password"
+          placeholder="密码"
+          className="mt-4 w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 text-slate-100 outline-none focus:border-sky-200/50"
+        />
+        {buildPasswordError && <p className="mt-2 text-sm text-rose-200">{buildPasswordError}</p>}
+        <div className="mt-5 flex justify-end gap-2">
+          <button type="button" onClick={onCancel} className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-300 hover:bg-white/10">
+            取消
+          </button>
+          <button type="button" onClick={submitBuildPassword} className="rounded-2xl bg-sky-200 px-4 py-3 text-sm font-semibold text-slate-950 hover:bg-sky-100">
+            进入
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
   const [currentId, setCurrentId] = useState("door");
   const [log, setLog] = useState(initialLog);
@@ -742,7 +778,21 @@ export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
   };
 
   if (!hasStarted) {
-    return <StartScreen abilities={abilities} setAbilities={setAbilities} onStart={() => setHasStarted(true)} navProps={navProps} />;
+    return (
+      <>
+        {showBuildGate && (
+          <BuildGateModal
+            buildPassword={buildPassword}
+            buildPasswordError={buildPasswordError}
+            setBuildPassword={setBuildPassword}
+            setBuildPasswordError={setBuildPasswordError}
+            submitBuildPassword={submitBuildPassword}
+            onCancel={() => setShowBuildGate(false)}
+          />
+        )}
+        <StartScreen abilities={abilities} setAbilities={setAbilities} onStart={() => setHasStarted(true)} navProps={navProps} />
+      </>
+    );
   }
 
   return (
