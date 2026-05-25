@@ -359,7 +359,7 @@ function HardNavBar({ mode, started, activeChapter, hoveredChapter, chapterMenuO
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="rounded-full bg-sky-200 px-3 py-1.5 text-xs text-slate-950">D&D Workbench</span>
-          <div className="relative" onMouseEnter={openChapterMenu} onMouseLeave={scheduleCloseChapterMenu}>
+          <div className="static md:relative" onMouseEnter={openChapterMenu} onMouseLeave={scheduleCloseChapterMenu}>
             <button
               type="button"
               onClick={() => {
@@ -371,8 +371,8 @@ function HardNavBar({ mode, started, activeChapter, hoveredChapter, chapterMenuO
               章节 · {started ? activeChapter.label : "Page 1"}
             </button>
             {chapterMenuOpen && (
-              <div className="absolute right-0 top-[34px] z-50 flex min-w-[360px] overflow-hidden rounded-2xl border border-white/10 bg-slate-950/95 shadow-2xl shadow-black/40 backdrop-blur">
-                <div className="w-40 border-r border-white/10 p-2">
+              <div className="absolute left-4 right-4 top-full z-50 mt-2 flex overflow-hidden rounded-2xl border border-white/10 bg-slate-950/95 shadow-2xl shadow-black/40 backdrop-blur md:left-auto md:right-0 md:top-[34px] md:mt-0 md:min-w-[360px]">
+                <div className="w-36 shrink-0 border-r border-white/10 p-2 md:w-40">
                   {chapterGroups.map((chapter) => (
                     <button
                       key={chapter.id}
@@ -385,7 +385,7 @@ function HardNavBar({ mode, started, activeChapter, hoveredChapter, chapterMenuO
                     </button>
                   ))}
                 </div>
-                <div className="w-56 p-2">
+                <div className="min-w-0 flex-1 p-2 md:w-56 md:flex-none">
                   <div className="mb-1 px-2 text-[10px] uppercase tracking-[0.2em] text-slate-500">分支</div>
                   {hoveredChapter.page === "start" ? (
                     <button type="button" onClick={onPageOne} className="w-full rounded-xl px-3 py-2 text-left text-slate-300 transition hover:bg-white/5 hover:text-slate-100">
