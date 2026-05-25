@@ -589,6 +589,198 @@ function BuildGateModal({ buildPassword, buildPasswordError, setBuildPassword, s
   );
 }
 
+function LogPanelContent({ displayedLog, log, logOrder, setLogOrder, localNow }) {
+  return (
+    <>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="flex h-7 items-center gap-1">
+          <svg viewBox="0 0 18 18" aria-hidden="true" className="h-[22px] w-[22px] shrink-0 text-sky-200">
+            <rect x="3" y="4" width="12" height="10" rx="1.8" fill="none" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M6 7H12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+            <path d="M6 10H12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+          </svg>
+          <span className="font-semibold leading-none">跑团记录</span>
+          <button
+            type="button"
+            onClick={() => setLogOrder(logOrder === "oldest" ? "newest" : "oldest")}
+            title={logOrder === "oldest" ? "当前：旧到新。点击切换为新到旧" : "当前：新到旧。点击切换为旧到新"}
+            className="ml-0.5 flex h-[18px] w-[18px] translate-y-[0.5px] items-center justify-center rounded-md text-slate-400 transition hover:bg-white/5 hover:text-sky-100"
+          >
+            <svg viewBox="0 0 18 18" aria-hidden="true" className="h-[13px] w-[13px]">
+              {logOrder === "oldest" ? (
+                <g>
+                  <path d="M3 5H15" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+                  <path d="M3 9H12" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+                  <path d="M3 13H8" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+                </g>
+              ) : (
+                <g>
+                  <path d="M3 5H8" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+                  <path d="M3 9H12" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+                  <path d="M3 13H15" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+                </g>
+              )}
+            </svg>
+          </button>
+        </div>
+        <span className="text-xs text-slate-400">{log.length} 条记录</span>
+      </div>
+      <div className="space-y-3 overflow-hidden">
+        {displayedLog.map((entry, index) => (
+          <div
+            key={`${entry.who}-${index}-${entry.text}`}
+            className={`rounded-2xl border p-3 ${entry.who === "主持人" ? "border-sky-300/15 bg-sky-300/5" : entry.who === "玩家" ? "border-amber-300/20 bg-amber-300/5" : entry.who === "骰子" ? "border-violet-300/20 bg-violet-300/5" : "border-white/10 bg-white/[0.03]"}`}
+          >
+            <div className="mb-1 flex items-center justify-between gap-3">
+              <span className="text-[10px] uppercase tracking-[0.22em] text-slate-400">{entry.who}</span>
+              <span className="shrink-0 text-[10px] tabular-nums text-slate-500">{entry.timeLabel || formatLocalTime(localNow)}</span>
+            </div>
+            <p className="text-sm leading-6 text-slate-200/90">{entry.text}</p>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
+function CharacterPanelContent({ mode, lastRoll, abilities, abilityTotal, statBars, node }) {
+  return (
+    <>
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex h-7 items-center gap-1.5">
+          <svg viewBox="0 0 18 18" aria-hidden="true" className="h-[20px] w-[20px] shrink-0 text-amber-100">
+            <rect x="4" y="3" width="10" height="12" rx="1.8" fill="none" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M7 6H11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+            <path d="M7 9H11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+            <path d="M7 12H9.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+          </svg>
+          <h2 className="font-semibold leading-none">{mode === "搭建" ? "制作笔记" : "角色面板"}</h2>
+        </div>
+        <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-400">{mode}</div>
+      </div>
+
+      <div className="mb-4 rounded-3xl border border-violet-200/15 bg-violet-200/5 p-4">
+        <div className="mb-3 flex items-center gap-2 text-sm font-semibold">⚄ 骰子 / 状态</div>
+        <div className="mb-3 rounded-2xl bg-black/20 p-3 text-sm text-slate-300">
+          上次掷骰：<span className="font-semibold text-amber-100">{lastRoll ?? "尚未掷骰"}</span>
+        </div>
+        <div className="mb-4 rounded-2xl border border-sky-200/15 bg-sky-200/5 p-3">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <span className="text-xs uppercase tracking-[0.2em] text-sky-100/60">角色能力加值</span>
+            <span className="text-[11px] text-slate-500">{abilityTotal}/{maxAbilityTotal}</span>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {Object.keys(abilities).map((name) => (
+              <div key={name} className="rounded-2xl border border-white/10 bg-black/15 px-3 py-2 text-xs text-slate-300">
+                <span className="mb-1 block text-slate-400">{name}</span>
+                <span className="block rounded-xl border border-white/10 bg-slate-950/80 px-2 py-1 text-sm font-semibold text-slate-100">{Number(abilities[name]) || 0}</span>
+              </div>
+            ))}
+          </div>
+          <p className="mt-2 text-[11px] leading-5 text-slate-500">开局已设定；结算时使用 d20 + 对应能力加值。</p>
+        </div>
+        <div className="mb-2 text-xs uppercase tracking-[0.2em] text-violet-100/60">当前状态</div>
+        <div className="space-y-3">
+          {statBars.map(([name, value, caption]) => (
+            <div key={name}>
+              <div className="mb-1 flex justify-between text-xs">
+                <span>{name}</span>
+                <span className="text-slate-500">{value}/6</span>
+              </div>
+              <div className="h-2 overflow-hidden rounded-full bg-white/10">
+                <div className="h-full rounded-full bg-slate-100 transition-all duration-300" style={{ width: `${(value / 6) * 100}%` }} />
+              </div>
+              <div className="mt-1 text-[11px] text-slate-500">{caption}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {mode === "搭建" && (
+        <div className="space-y-4">
+          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-4">
+            <div className="mb-2 flex items-center gap-2 text-sm font-semibold">
+              <span className="text-sky-100">✦</span> 节点目的
+            </div>
+            <p className="text-sm leading-6 text-slate-300">{node.notes.purpose}</p>
+          </div>
+          <Section title="交互逻辑" icon="⌁" items={node.notes.interactions} />
+          <Section title="隐藏变量" icon="✧" items={node.notes.variables} />
+          <Section title="声音想法" icon="◌" items={node.notes.audio} />
+          <Section title="制作备注" icon="▦" items={node.notes.build} />
+        </div>
+      )}
+    </>
+  );
+}
+
+function MobileGlobalDrawer({
+  open,
+  activeTab,
+  setActiveTab,
+  onClose,
+  displayedLog,
+  log,
+  logOrder,
+  setLogOrder,
+  localNow,
+  mode,
+  lastRoll,
+  abilities,
+  abilityTotal,
+  statBars,
+  node,
+}) {
+  if (!open) return null;
+
+  const logActive = activeTab === "log";
+  const tabClass = "h-10 rounded-2xl text-sm font-semibold transition";
+
+  return (
+    <div className="fixed inset-0 z-[65] text-slate-100 xl:hidden">
+      <button type="button" aria-label="关闭总览面板" onClick={onClose} className="absolute inset-0 bg-slate-950/45 backdrop-blur-[3px]" />
+      <aside className="relative h-full w-[min(88vw,390px)] overflow-y-auto border-r border-white/10 bg-slate-950/90 p-4 shadow-2xl shadow-black/50 backdrop-blur-xl">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <div className="text-[10px] uppercase tracking-[0.24em] text-sky-100/45">global</div>
+            <h2 className="mt-1 text-lg font-semibold tracking-tight">总览面板</h2>
+          </div>
+          <button type="button" onClick={onClose} className="h-9 rounded-full border border-white/10 bg-white/5 px-3 text-xs text-slate-300 transition hover:bg-white/10">
+            关闭
+          </button>
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-2 rounded-3xl border border-white/10 bg-white/[0.03] p-1.5">
+          <button
+            type="button"
+            aria-pressed={logActive}
+            onClick={() => setActiveTab("log")}
+            className={`${tabClass} ${logActive ? "bg-sky-200 text-slate-950" : "bg-transparent text-slate-300 hover:bg-white/10"}`}
+          >
+            跑团记录
+          </button>
+          <button
+            type="button"
+            aria-pressed={!logActive}
+            onClick={() => setActiveTab("character")}
+            className={`${tabClass} ${!logActive ? "bg-sky-200 text-slate-950" : "bg-transparent text-slate-300 hover:bg-white/10"}`}
+          >
+            角色状态
+          </button>
+        </div>
+
+        <div className="mt-4 rounded-3xl border border-white/10 bg-white/[0.035] p-4">
+          {logActive ? (
+            <LogPanelContent displayedLog={displayedLog} log={log} logOrder={logOrder} setLogOrder={setLogOrder} localNow={localNow} />
+          ) : (
+            <CharacterPanelContent mode={mode} lastRoll={lastRoll} abilities={abilities} abilityTotal={abilityTotal} statBars={statBars} node={node} />
+          )}
+        </div>
+      </aside>
+    </div>
+  );
+}
+
 export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
   const [currentId, setCurrentId] = useState("door");
   const [log, setLog] = useState(initialLog);
@@ -606,6 +798,8 @@ export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
   const [showBuildGate, setShowBuildGate] = useState(false);
   const [chapterMenuOpen, setChapterMenuOpen] = useState(false);
   const [hoveredChapterId, setHoveredChapterId] = useState("page-01");
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [mobileDrawerTab, setMobileDrawerTab] = useState("log");
   const [buildPassword, setBuildPassword] = useState("");
   const [buildPasswordError, setBuildPasswordError] = useState("");
   const chapterCloseTimer = useRef(null);
@@ -622,6 +816,15 @@ export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
       if (chapterCloseTimer.current) window.clearTimeout(chapterCloseTimer.current);
     };
   }, []);
+
+  useEffect(() => {
+    if (!mobileDrawerOpen) return undefined;
+    function handleKeyDown(event) {
+      if (event.key === "Escape") setMobileDrawerOpen(false);
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [mobileDrawerOpen]);
 
   const node = nodes[currentId] || nodes.door;
   const sceneTimeLabel = formatLocalTime(localNow);
@@ -831,6 +1034,23 @@ export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
         </div>
       )}
       <CheckResultModal check={checkModal} onClose={closeCheckModal} />
+      <MobileGlobalDrawer
+        open={mobileDrawerOpen}
+        activeTab={mobileDrawerTab}
+        setActiveTab={setMobileDrawerTab}
+        onClose={() => setMobileDrawerOpen(false)}
+        displayedLog={displayedLog}
+        log={log}
+        logOrder={logOrder}
+        setLogOrder={setLogOrder}
+        localNow={localNow}
+        mode={mode}
+        lastRoll={lastRoll}
+        abilities={abilities}
+        abilityTotal={abilityTotal}
+        statBars={statBars}
+        node={node}
+      />
 
       <div
         className="pointer-events-none fixed inset-0 opacity-[0.08]"
@@ -843,61 +1063,32 @@ export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
       <div className="relative mx-auto flex max-w-[1500px] flex-col gap-4">
         <HardNavBar {...navProps} started />
 
+        <div className="xl:hidden">
+          <button
+            type="button"
+            onClick={() => setMobileDrawerOpen(true)}
+            className="inline-flex h-10 items-center gap-2 rounded-full border border-white/10 bg-slate-950/65 px-4 text-sm font-semibold text-slate-100 shadow-lg shadow-black/20 backdrop-blur transition hover:bg-white/10"
+          >
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-sky-200/15 text-sky-100">
+              <svg viewBox="0 0 18 18" aria-hidden="true" className="h-4 w-4">
+                <path d="M4 5H14" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+                <path d="M4 9H14" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+                <path d="M4 13H14" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+              </svg>
+            </span>
+            总览
+          </button>
+        </div>
+
         <header className="mt-2 flex flex-col gap-3 rounded-3xl border border-white/10 bg-white/[0.03] px-5 py-4 backdrop-blur md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-[2.15rem] font-semibold leading-tight tracking-tight">Rose 推开的那扇门</h1>
           </div>
         </header>
 
-        <main className="grid gap-4 lg:grid-cols-[0.9fr_1.35fr_0.95fr]">
-          <Panel className="min-h-[720px] p-4">
-            <div className="mb-4 flex items-center justify-between gap-3">
-              <div className="flex h-7 items-center gap-1">
-                <svg viewBox="0 0 18 18" aria-hidden="true" className="h-[22px] w-[22px] shrink-0 text-sky-200">
-                  <rect x="3" y="4" width="12" height="10" rx="1.8" fill="none" stroke="currentColor" strokeWidth="1.5" />
-                  <path d="M6 7H12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-                  <path d="M6 10H12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-                </svg>
-                <span className="font-semibold leading-none">跑团记录</span>
-                <button
-                  type="button"
-                  onClick={() => setLogOrder(logOrder === "oldest" ? "newest" : "oldest")}
-                  title={logOrder === "oldest" ? "当前：旧到新。点击切换为新到旧" : "当前：新到旧。点击切换为旧到新"}
-                  className="ml-0.5 flex h-[18px] w-[18px] translate-y-[0.5px] items-center justify-center rounded-md text-slate-400 transition hover:bg-white/5 hover:text-sky-100"
-                >
-                  <svg viewBox="0 0 18 18" aria-hidden="true" className="h-[13px] w-[13px]">
-                    {logOrder === "oldest" ? (
-                      <g>
-                        <path d="M3 5H15" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-                        <path d="M3 9H12" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-                        <path d="M3 13H8" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-                      </g>
-                    ) : (
-                      <g>
-                        <path d="M3 5H8" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-                        <path d="M3 9H12" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-                        <path d="M3 13H15" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-                      </g>
-                    )}
-                  </svg>
-                </button>
-              </div>
-              <span className="text-xs text-slate-400">{log.length} 条记录</span>
-            </div>
-            <div className="space-y-3 overflow-hidden">
-              {displayedLog.map((entry, index) => (
-                <div
-                  key={`${entry.who}-${index}-${entry.text}`}
-                  className={`rounded-2xl border p-3 ${entry.who === "主持人" ? "border-sky-300/15 bg-sky-300/5" : entry.who === "玩家" ? "border-amber-300/20 bg-amber-300/5" : entry.who === "骰子" ? "border-violet-300/20 bg-violet-300/5" : "border-white/10 bg-white/[0.03]"}`}
-                >
-                  <div className="mb-1 flex items-center justify-between gap-3">
-                    <span className="text-[10px] uppercase tracking-[0.22em] text-slate-400">{entry.who}</span>
-                    <span className="shrink-0 text-[10px] tabular-nums text-slate-500">{entry.timeLabel || formatLocalTime(localNow)}</span>
-                  </div>
-                  <p className="text-sm leading-6 text-slate-200/90">{entry.text}</p>
-                </div>
-              ))}
-            </div>
+        <main className="grid gap-4 xl:grid-cols-[0.9fr_1.35fr_0.95fr]">
+          <Panel className="hidden min-h-[720px] p-4 xl:block">
+            <LogPanelContent displayedLog={displayedLog} log={log} logOrder={logOrder} setLogOrder={setLogOrder} localNow={localNow} />
           </Panel>
 
           <Panel className="relative min-h-[720px] overflow-hidden p-5">
@@ -998,71 +1189,8 @@ export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
             </div>
           </Panel>
 
-          <Panel className="min-h-[720px] p-4">
-            <div className="mb-4 flex items-center justify-between">
-              <div className="flex h-7 items-center gap-1.5">
-                <svg viewBox="0 0 18 18" aria-hidden="true" className="h-[20px] w-[20px] shrink-0 text-amber-100">
-                  <rect x="4" y="3" width="10" height="12" rx="1.8" fill="none" stroke="currentColor" strokeWidth="1.5" />
-                  <path d="M7 6H11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-                  <path d="M7 9H11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-                  <path d="M7 12H9.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-                </svg>
-                <h2 className="font-semibold leading-none">{mode === "搭建" ? "制作笔记" : "角色面板"}</h2>
-              </div>
-              <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-400">{mode}</div>
-            </div>
-
-            <div className="mb-4 rounded-3xl border border-violet-200/15 bg-violet-200/5 p-4">
-              <div className="mb-3 flex items-center gap-2 text-sm font-semibold">⚄ 骰子 / 状态</div>
-              <div className="mb-3 rounded-2xl bg-black/20 p-3 text-sm text-slate-300">
-                上次掷骰：<span className="font-semibold text-amber-100">{lastRoll ?? "尚未掷骰"}</span>
-              </div>
-              <div className="mb-4 rounded-2xl border border-sky-200/15 bg-sky-200/5 p-3">
-                <div className="mb-2 flex items-center justify-between gap-2">
-                  <span className="text-xs uppercase tracking-[0.2em] text-sky-100/60">角色能力加值</span>
-                  <span className="text-[11px] text-slate-500">{abilityTotal}/{maxAbilityTotal}</span>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  {Object.keys(abilities).map((name) => (
-                    <div key={name} className="rounded-2xl border border-white/10 bg-black/15 px-3 py-2 text-xs text-slate-300">
-                      <span className="mb-1 block text-slate-400">{name}</span>
-                      <span className="block rounded-xl border border-white/10 bg-slate-950/80 px-2 py-1 text-sm font-semibold text-slate-100">{Number(abilities[name]) || 0}</span>
-                    </div>
-                  ))}
-                </div>
-                <p className="mt-2 text-[11px] leading-5 text-slate-500">开局已设定；结算时使用 d20 + 对应能力加值。</p>
-              </div>
-              <div className="mb-2 text-xs uppercase tracking-[0.2em] text-violet-100/60">当前状态</div>
-              <div className="space-y-3">
-                {statBars.map(([name, value, caption]) => (
-                  <div key={name}>
-                    <div className="mb-1 flex justify-between text-xs">
-                      <span>{name}</span>
-                      <span className="text-slate-500">{value}/6</span>
-                    </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-white/10">
-                      <div className="h-full rounded-full bg-slate-100 transition-all duration-300" style={{ width: `${(value / 6) * 100}%` }} />
-                    </div>
-                    <div className="mt-1 text-[11px] text-slate-500">{caption}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {mode === "搭建" && (
-              <div className="space-y-4">
-                <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-4">
-                  <div className="mb-2 flex items-center gap-2 text-sm font-semibold">
-                    <span className="text-sky-100">✦</span> 节点目的
-                  </div>
-                  <p className="text-sm leading-6 text-slate-300">{node.notes.purpose}</p>
-                </div>
-                <Section title="交互逻辑" icon="⌁" items={node.notes.interactions} />
-                <Section title="隐藏变量" icon="✧" items={node.notes.variables} />
-                <Section title="声音想法" icon="◌" items={node.notes.audio} />
-                <Section title="制作备注" icon="▦" items={node.notes.build} />
-              </div>
-            )}
+          <Panel className="hidden min-h-[720px] p-4 xl:block">
+            <CharacterPanelContent mode={mode} lastRoll={lastRoll} abilities={abilities} abilityTotal={abilityTotal} statBars={statBars} node={node} />
           </Panel>
         </main>
       </div>
