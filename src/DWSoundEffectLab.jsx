@@ -230,7 +230,7 @@ function SoundCard({ preset, selected, onPlay, onSelect }) {
   );
 }
 
-export default function DWSoundEffectLab() {
+export default function DWSoundEffectLab({ onBackToWorkbench = () => {} }) {
   const [filter, setFilter] = useState("All");
   const [selected, setSelected] = useState([]);
   const [presetBank, setPresetBank] = useState(() => basePresets.map((preset) => createTake(preset)));
@@ -255,6 +255,23 @@ export default function DWSoundEffectLab() {
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_20%_10%,rgba(56,189,248,.18),transparent_28%),radial-gradient(circle_at_80%_15%,rgba(251,191,36,.14),transparent_26%),linear-gradient(135deg,#020617,#07111f_45%,#020617)] p-5 text-slate-100 md:p-8">
+      <header className="relative z-40 -mx-5 -mt-5 mb-5 border-b border-white/10 bg-slate-950/85 px-5 py-2 backdrop-blur md:-mx-8 md:-mt-8 md:px-8">
+        <div className="mx-auto flex max-w-[1500px] flex-wrap items-center justify-between gap-2">
+          <div>
+            <div className="text-[10px] uppercase tracking-[0.24em] text-sky-100/40">Doctor Who Interactive Lab</div>
+            <div className="text-base font-semibold tracking-tight text-slate-100">Rose Door Workbench</div>
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <button type="button" onClick={onBackToWorkbench} className="h-[30px] rounded-full border border-white/10 bg-white/5 px-3 text-xs text-slate-200 transition hover:bg-white/10">
+              D&D Workbench
+            </button>
+            <button type="button" onClick={onBackToWorkbench} className="h-[30px] rounded-full border border-white/10 bg-white/5 px-3 text-xs text-slate-200 transition hover:bg-white/10">
+              章节 · Page 1
+            </button>
+            <span className="rounded-full bg-sky-200 px-3 py-1.5 text-xs text-slate-950">Sound Lab</span>
+          </div>
+        </div>
+      </header>
       <div className="mx-auto max-w-6xl">
         <header className="mb-6 rounded-3xl border border-white/10 bg-white/[0.04] p-5 backdrop-blur">
           <div className="text-xs uppercase tracking-[0.28em] text-sky-100/60">DW audio workbench</div>
