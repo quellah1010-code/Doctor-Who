@@ -1,133 +1,28 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
 const nodes = {
-  door: {
-    id: "door",
-    title: "Rose 推开的那扇门",
-    scene: "第 01 幕 · 打烊后的商场通道",
-    location: "地下员工通道",
-    atmosphere: ["外面在下雨", "灯管嗡鸣", "不该出现的门", "无信号"],
-    text: "走廊的灯闪了一下。尽头那面本该是水泥墙的地方，立着一扇蓝色木门。它太旧了，不像属于这座商场；它又太安静了，像一直在等某个人终于注意到它。",
-    object: "门把手上方贴着一张白纸，上面写着：PULL TO OPEN。",
-    hint: "你的手机自己亮了。电量 17%。无服务。没有发件人的未读短信，正静静躺在屏幕中央。",
-    choices: [
-      { label: "贴近门听一听", next: "listen", icon: "◌" },
-      { label: "查看手机", next: "phone", icon: "▣" },
-      { label: "拉开这扇门", next: "pull", icon: "▯" },
-      { label: "后退一步", next: "stepback", icon: "←" },
-    ],
-    notes: {
-      purpose: "玩家第一次遇见“不可能存在的门”，并决定要承认多少好奇心。",
-      interactions: ["先选择行动，再进入骰子判定", "玩家可手动输入 d20 点数，也可随机掷骰", "判定顺利/受阻会写入跑团记录并推进节点"],
-      variables: ["调查时：好奇心 +1", "后退受阻时：恐惧 +2", "触碰门把手时：时间静电明显上升"],
-      audio: ["老旧灯管的电流嗡鸣", "通风口里隐约的雨声", "门后低沉的机械呼吸声"],
-      build: ["不需要插画", "蓝门是纯 CSS 元素", "剧情节点写在可编辑 JSON 里"],
-    },
-  },
-  listen: {
-    id: "listen",
-    title: "门也在听你",
-    scene: "第 01A 幕 · 耳朵贴上木门",
-    location: "同一条通道",
-    atmosphere: ["模糊人声", "旧电视静电", "温热的木头", "屏住呼吸"],
-    text: "你把耳朵贴上蓝色木门。门后没有房间。那里有风声、机器声，还有一个女人的声音，从几十年的静电噪声里穿过来。她叫出了你的名字，语气像是忍了很久才终于开口。",
-    object: "门的另一边回应了三下敲击。停顿。两下。再三下。",
-    hint: "那个声音不像是在邀请你进去，更像是在确认：你是不是已经听见了。",
-    choices: [
-      { label: "敲回去", next: "pull", icon: "▯" },
-      { label: "查看手机", next: "phone", icon: "▣" },
-      { label: "退回走廊", next: "door", icon: "←" },
-    ],
-    notes: {
-      purpose: "调查分支。让玩家意识到这扇门不是死物，它会回应。",
-      interactions: ["这是骰子机制最适合出现的节点", "顺利时听见更完整的人声片段", "受阻时走廊会用玩家自己的声音回应"],
-      variables: ["好奇心 +1", "时间静电 +1", "如果玩家敲回去：门的信任 +1"],
-      audio: ["木门敲击声", "旧电视雪花屏噪声", "非常远的女性声音"],
-      build: ["给门缝加一个很轻的敲击动画", "记录区显示检定结果", "可作为骰子机制的第一个教学点"],
-    },
-  },
-  phone: {
-    id: "phone",
-    title: "一条没有发件人的短信",
-    scene: "第 01B 幕 · 手机屏幕",
-    location: "地下员工通道 · 电量 17%",
-    atmosphere: ["冰冷玻璃", "屏幕微光", "没有发件人", "不可能的短信"],
-    text: "屏幕在你没有触碰它的情况下亮起。无信号。无 Wi‑Fi。无发件人。短信框自己打开，字母一个个浮现出来，像时间另一端有个非常耐心的人正在打字。",
-    object: ["ROSE OPENED HERS. NOW IT’S YOUR TURN.", "Rose 打开了她的那扇。现在轮到你了。"],
-    hint: "相机应用紧接着自己打开。在取景框里，那扇蓝门已经开了。",
-    choices: [
-      { label: "拍一张照", next: "stepback", icon: "▣" },
-      { label: "拉开这扇门", next: "pull", icon: "▯" },
-      { label: "删除短信", next: "door", icon: "×" },
-    ],
-    notes: {
-      purpose: "手机分支。把日常设备变成玩家和时间裂缝之间的接口。",
-      interactions: ["手机卡片可以从中间面板滑出", "短信内容用打字机效果出现", "照片预览可以显示未来状态"],
-      variables: ["时间静电 +1", "如果拍照：证据 +1", "如果删除短信：恐惧 +1"],
-      audio: ["手机震动", "被扭曲的通知音", "反向播放的快门声"],
-      build: ["制作纯 CSS 手机小面板", "不需要真实图片，用文字预览即可", "之后可复用为线索 UI"],
-    },
-  },
-  pull: {
-    id: "pull",
-    title: "裂缝打开了",
-    scene: "第 02 幕 · 门槛",
-    location: "已经不完全是商场了",
-    atmosphere: ["金色光", "内部比外部更大", "机器呼吸", "无法原路返回"],
-    text: "门把手比金属更冷，又比皮肤更温热。你向外一拉，门后没有普通房间，而是一片纵深。金色光铺过地面，带着雨水、灰尘、发热电线，以及某个等待太久的地方的气味。",
-    object: "里面的墙壁上有一圈圈发光的圆形结构。一座控制台在深处低鸣，像某种努力假装成机器的动物。",
-    hint: "你身后的走廊开始一盏灯、一盏灯地消失。",
-    choices: [
-      { label: "走进去", next: "door", icon: "→" },
-      { label: "向里面喊话", next: "listen", icon: "◌" },
-      { label: "回头看", next: "stepback", icon: "←" },
-    ],
-    notes: {
-      purpose: "第一次跨过门槛。页面从普通工作台正式转入冒险状态。",
-      interactions: ["门缝金光扩散", "中间面板可短暂反色或闪烁", "跑团记录添加“跨越门槛”事件"],
-      variables: ["时间静电 +2", "好奇心 +2", "普通世界 -1"],
-      audio: ["低沉引擎声", "金色光升起的细碎声", "走廊灯逐个熄灭"],
-      build: ["CSS 发光动画", "不使用官方 logo 或原剧完整标识", "这是第一版 demo 的高潮节点"],
-    },
-  },
-  stepback: {
-    id: "stepback",
-    title: "你已经不能当作没看见了",
-    scene: "第 01C 幕 · 尝试离开",
-    location: "地下员工通道",
-    atmosphere: ["距离变错", "灯光重复", "商场地图改变", "轻微恐慌"],
-    text: "你后退一步。很理智。很正常。很像一个人类该做的事。但走廊礼貌地拒绝结束。出口标识还在，只是现在它不再指向出口，而是指向那扇蓝门。",
-    object: "地面上，你自己的影子向前伸长，在你之前碰到了门把手。",
-    hint: "门还没有打开。但别的东西已经打开了。",
-    choices: [
-      { label: "跟着自己的影子", next: "pull", icon: "▯" },
-      { label: "再听一次", next: "listen", icon: "◌" },
-      { label: "查看手机", next: "phone", icon: "▣" },
-    ],
-    notes: {
-      purpose: "拒绝分支。展示“不选择”本身也会产生后果。",
-      interactions: ["出口标识文字可 glitch", "影子用 CSS 渐变线条表示", "玩家会知道撤退也有代价"],
-      variables: ["恐惧 +2", "时间静电 +1", "好奇心保持未解决状态"],
-      audio: ["重复的脚步声", "出口灯牌电流破音", "很轻的心跳声"],
-      build: ["适合展示玩家能动性", "不需要美术", "之后可以加入走廊循环视觉"],
-    },
-  },
+  "1-a": { id:"1-a", title:"1-A 洗衣店门口", scene:"第 01 幕", location:"Powell Estate 洗衣店", atmosphere:["夜雨","滚筒敲击"], text:"Rose 停在洗衣店门口，里面传出不自然的尖叫与敲击。", object:"门把手是湿的，像刚被谁抓过。", hint:"先确认 Jackie 的反应。", choices:[{id:"c_1a_to_1b",label:"走进去找 Jackie",intent:"approach",actionType:"move",noCheck:true,next:"1-b",resultText:"你推门而入。"}]},
+  "1-b": { id:"1-b", title:"1-B Jackie 的话", scene:"第 01 幕", location:"洗衣机排前", atmosphere:["争执","担心"], text:"Jackie 盯着你：\"Rose, don’t you dare pretend this is normal.\"", object:"最里面那台洗衣机敲了三下。", hint:"你要先安抚还是先靠近门？", choices:[{id:"c_1b_opt",label:"先安抚 Jackie",intent:"optional",actionType:"talk",noCheck:true,consumeOnUse:true,logText:"你压低声音让 Jackie 先后退半步。",relationshipDelta:{jackie:1},abilityTempDelta:{冷静:1}},{id:"c_1b_to_1c",label:"靠近蓝门",intent:"progress",actionType:"move",noCheck:true,next:"1-c",resultText:"你靠近了那扇门。"}]},
+  "1-c": { id:"1-c", title:"1-C 第一次敲门", scene:"第 01 幕", location:"蓝门前", atmosphere:["静电","回音"], text:"你抬手敲门，里面几乎同时敲回。", object:"三下，停顿，再三下。", hint:"要不要立刻开门？", choices:[{id:"c_1c_open",label:"拉开门",intent:"open",actionType:"check",check:{name:"胆量",dc:10},resultText:"门轴发出低鸣。",smoothText:"你稳住呼吸，门被你控制住。",blockedText:"门猛地反拉，你差点摔进去。",smoothNext:"branch_open_door",blockedNext:"branch_open_door",flagsAddAlways:["first_knock"]}]},
+  "branch_open_door": { id:"branch_open_door", title:"branch_open_door 开门后果", scene:"第 01 幕", location:"门缝", atmosphere:["金光","墙体震动"], text:"门后传来 TARDIS 的低鸣。", object:"Jackie 本能地往前一步。", hint:"手机亮起了。", choices:[{id:"c_branch_to_1d",label:"查看来信",intent:"progress",actionType:"move",noCheck:true,next:"1-d",resultText:"短信弹出。"}]},
+  "1-d": { id:"1-d", title:"1-D TARDIS 来信", scene:"第 01 幕", location:"洗衣店中间", atmosphere:["短信","规则"], text:"屏幕出现：KNOCK BACK。", object:"下一行：BOTH OF YOU。", hint:"墙面开始开裂。", choices:[{id:"c_1d_to_2a",label:"抬头看墙",intent:"progress",actionType:"move",noCheck:true,next:"2-a",resultText:"裂缝扩散。"}]},
+  "2-a": { id:"2-a", title:"2-A 墙裂开了 / 蓝门出现", scene:"第 02 幕", location:"洗衣店后墙", atmosphere:["裂缝","蓝门"], text:"砖墙裂开，蓝门从裂口里挤出来。", object:"所有能开合的东西都在敲回去。", hint:"有人冲进来了。", choices:[{id:"c_2a_to_2b",label:"退到店中央",intent:"progress",actionType:"move",noCheck:true,next:"2-b",resultText:"你们暂时拉开距离。"}]},
+  "2-b": { id:"2-b", title:"2-B Mickey 进场 & 规则", scene:"第 02 幕", location:"洗衣店前门", atmosphere:["雨水","球棒"], text:"Mickey 冲进来，同时厕所门里传出他的声音。", object:"RULE THREE: A REAL PERSON CAN KNOCK BACK.", hint:"需要先稳定队形。", choices:[{id:"c_2b_a",label:"告诉 Mickey 不要开任何门",intent:"command",actionType:"move",noCheck:true,next:"2-c",resultText:"Mickey 点头，握紧球棒。"},{id:"c_2b_b",label:"核对真伪后再部署",intent:"check",actionType:"check",check:{name:"感知",dc:9},resultText:"你快速比对声音来源。",smoothText:"你确认厕所里的 Mickey 是假的。",blockedText:"你迟疑了一秒，气氛更紧。",smoothNext:"2-c",blockedNext:"2-c",publicStatsDeltaBlocked:{fear:1}}]},
+  "2-c": { id:"2-c", title:"2-C Jackie 和 Doctor（占位）", scene:"第 02 幕", location:"蓝门前", atmosphere:["占位"], text:"Jackie 问：Doctor 在哪？这里是 2-B 汇合占位节点。", object:"（待后续章节实现）", hint:"本轮到 2-B 为止。", choices:[]}
 };
-
 const chapterGroups = [
   { id: "page-01", label: "Page 1", title: "序章 / 角色准备", page: "start", nodeIds: [] },
-  { id: "chapter-01", label: "第 01 幕", title: "打烊后的商场通道", nodeIds: ["door", "listen", "phone", "stepback"] },
-  { id: "chapter-02", label: "第 02 幕", title: "门槛", nodeIds: ["pull"] },
+  { id: "chapter-01", label: "第 01 幕", title: "尖叫的洗衣店", nodeIds: ["1-a","1-b","1-c","branch_open_door","1-d"] },
+  { id: "chapter-02", label: "第 02 幕", title: "蓝色的门", nodeIds: ["2-a","2-b","2-c"] },
 ];
 
 const maxAbilityTotal = 5;
 const maxSingleAbility = 3;
-const fullIntroMessage = ["ROSE OPENED HERS.", "NOW IT’S YOUR TURN."].join(String.fromCharCode(10));
+const fullIntroMessage = ["KNOCK BACK.", "BOTH OF YOU."].join(String.fromCharCode(10));
 const initialAbilities = { 感知: 0, 机智: 0, 胆量: 0, 冷静: 0 };
 const initialLog = [
-  { who: "主持人", text: "商场已经打烊。雨声从天花板上方的通风口里传来。" },
-  { who: "主持人", text: "员工通道尽头，一扇蓝门安静地等在那里，像它一直都在。" },
-  { who: "系统", text: "节点已载入：Rose 推开的那扇门" },
+  { who: "主持人", text: "Father's Day 当晚，Rose 路过洗衣店，听见滚筒在尖叫。" },
+  { who: "系统", text: "节点已载入：1-A 洗衣店门口" },
 ];
 
 function clampNumber(value, min, max) {
@@ -485,9 +380,9 @@ function StartScreen({ abilities, setAbilities, onStart, navProps }) {
                 <span className="h-2 w-2 rounded-full bg-sky-200/75" />
                 序章
               </div>
-              <h1 className="text-[3rem] font-semibold leading-[1.08] tracking-tight">Rose 推开的那扇门</h1>
-              <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-300">商场已经打烊，雨水顺着通风口的边缘往下滴。你只是想穿过员工通道离开，却在本该是水泥墙的地方，看见了一扇蓝色木门。</p>
-              <p className="mt-4 max-w-2xl text-base leading-7 text-slate-400">它太旧了，不像属于这座商场；它又太安静了，像一直在等某个人终于注意到它。你的手机亮起，一条没有发件人的短信躺在屏幕中央：</p>
+              <h1 className="text-[3rem] font-semibold leading-[1.08] tracking-tight">KNOCK BACK / 敲回去</h1>
+              <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-300">Father's Day 当晚，Doctor 把 Rose 送回 Powell Estate，TARDIS 离开后，Jackie 发来短信让她买牛奶。Rose 路过洗衣店，听见洗衣店在尖叫。</p>
+              <p className="mt-4 max-w-2xl text-base leading-7 text-slate-400">你停在门口，里面的洗衣机正用不该出现的节奏敲击滚筒。</p>
               <button
                 type="button"
                 onClick={() => setMessageOpened(true)}
@@ -544,7 +439,7 @@ function StartScreen({ abilities, setAbilities, onStart, navProps }) {
             </div>
 
             <button type="button" onClick={startGame} disabled={abilityOverLimit} className="mt-5 h-12 w-full rounded-2xl bg-sky-200 text-sm font-semibold text-slate-950 transition hover:bg-sky-100 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-400">
-              开始进入通道
+              开始进入洗衣店
             </button>
           </Panel>
         </div>
@@ -782,10 +677,15 @@ function MobileGlobalDrawer({
 }
 
 export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
-  const [currentId, setCurrentId] = useState("door");
+  const [currentId, setCurrentId] = useState("1-a");
   const [log, setLog] = useState(initialLog);
   const [mode, setMode] = useState("游玩");
-  const [stats, setStats] = useState({ curiosity: 1, fear: 0, timeStatic: 0 });
+  const [stats, setStats] = useState({ curiosity: 0, fear: 0, timeStatic: 0 });
+  const [flags, setFlags] = useState([]);
+  const [usedOptionalChoiceIds, setUsedOptionalChoiceIds] = useState([]);
+  const [relationshipState, setRelationshipState] = useState({});
+  const [abilityTempBonus, setAbilityTempBonus] = useState({});
+  const [records, setRecords] = useState([]);
   const [abilities, setAbilities] = useState(initialAbilities);
   const [logOrder, setLogOrder] = useState("oldest");
   const [localNow, setLocalNow] = useState(() => new Date());
@@ -886,7 +786,7 @@ export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
 
   function returnToPageOne() {
     setHoveredChapterId("page-01");
-    setCurrentId("door");
+    setCurrentId("1-a");
     clearPendingCheck();
     closeChapterMenu();
     setHasStarted(false);
@@ -900,7 +800,27 @@ export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
   }
 
   function choose(choice) {
-    const check = getCheck(choice);
+    if (choice.consumeOnUse && usedOptionalChoiceIds.includes(choice.id)) return;
+    const check = choice.check || getCheck(choice);
+    const applyOutcome = (isSmooth) => {
+      const text = isSmooth ? (choice.smoothText || choice.resultText || "行动推进。") : (choice.blockedText || choice.resultText || "行动推进。")
+      const nextId = (isSmooth ? choice.smoothNext : choice.blockedNext) || choice.next || currentId;
+      const addFlags = [...(choice.flagsAddAlways||[]), ...(isSmooth ? (choice.flagsAddSmooth||[]) : (choice.flagsAddBlocked||[]))];
+      if (addFlags.length) setFlags((f)=>Array.from(new Set([...f, ...addFlags])));
+      if (choice.consumeOnUse) setUsedOptionalChoiceIds((c)=>Array.from(new Set([...c, choice.id])));
+      const sDelta = choice.publicStatsDelta || {}; const sDelta2 = isSmooth ? (choice.publicStatsDeltaSmooth||{}) : (choice.publicStatsDeltaBlocked||{});
+      setStats((st)=>({curiosity:(st.curiosity||0)+(sDelta.curiosity||0)+(sDelta2.curiosity||0), fear:(st.fear||0)+(sDelta.fear||0)+(sDelta2.fear||0), timeStatic:(st.timeStatic||0)+(sDelta.timeStatic||0)+(sDelta2.timeStatic||0)}));
+      const aDelta = choice.abilityTempDelta || {}; const aDelta2 = isSmooth ? (choice.abilityTempDeltaSmooth||{}) : (choice.abilityTempDeltaBlocked||{});
+      setAbilityTempBonus((ab)=>({ ...ab, ...Object.fromEntries([...new Set([...Object.keys(aDelta),...Object.keys(aDelta2)])].map(k=>[k,(ab[k]||0)+(aDelta[k]||0)+(aDelta2[k]||0)])) }));
+      const rDelta = choice.relationshipDelta || {}; const rDelta2 = isSmooth ? (choice.relationshipDeltaSmooth||{}) : (choice.relationshipDeltaBlocked||{});
+      setRelationshipState((rs)=>({ ...rs, ...Object.fromEntries([...new Set([...Object.keys(rDelta),...Object.keys(rDelta2)])].map(k=>[k,(rs[k]||0)+(rDelta[k]||0)+(rDelta2[k]||0)])) }));
+      const rec = isSmooth ? (choice.playerRecordSmooth||choice.playerRecord) : (choice.playerRecordBlocked||choice.playerRecord); if (rec) setRecords((r)=>[...r,rec]);
+      const logText = isSmooth ? (choice.logTextSmooth||choice.logText) : (choice.logTextBlocked||choice.logText);
+      const timeLabel = formatLocalTime(localNow);
+      setLog((l)=>[...l, ...(logText?[{who:"主持人",text:logText,timeLabel}]:[]), {who:"主持人",text,timeLabel}]);
+      setCurrentId(nextId);
+    };
+    if (choice.noCheck) { applyOutcome(true); return; }
     setPendingChoice(choice);
     setRollInput("");
     setRollError("");
@@ -928,7 +848,7 @@ export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
       return;
     }
     const check = getCheck(pendingChoice);
-    const bonus = Number(abilities[check.name]) || 0;
+    const bonus = (Number(abilities[check.name]) || 0) + (Number(abilityTempBonus[check.name]) || 0);
     const total = roll + bonus;
     const success = total >= check.dc;
     const delta = getDelta(pendingChoice.next, success);
@@ -1082,7 +1002,7 @@ export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
 
         <header className="mt-2 flex flex-col gap-3 rounded-3xl border border-white/10 bg-white/[0.03] px-5 py-4 backdrop-blur md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-[2.15rem] font-semibold leading-tight tracking-tight">Rose 推开的那扇门</h1>
+            <h1 className="text-[2.15rem] font-semibold leading-tight tracking-tight">KNOCK BACK / 敲回去</h1>
           </div>
         </header>
 
