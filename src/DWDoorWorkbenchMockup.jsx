@@ -907,6 +907,13 @@ export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
     setHasStarted(true);
   }
 
+  function startWorkbench() {
+    setHasStarted(true);
+    window.setTimeout(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    }, 0);
+  }
+
   function choose(choice) {
     const check = getCheck(choice);
     setPendingChoice(choice);
@@ -1002,7 +1009,7 @@ export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
             onCancel={() => setShowBuildGate(false)}
           />
         )}
-        <StartScreen abilities={abilities} setAbilities={setAbilities} onStart={() => setHasStarted(true)} navProps={navProps} />
+        <StartScreen abilities={abilities} setAbilities={setAbilities} onStart={startWorkbench} navProps={navProps} />
       </>
     );
   }
