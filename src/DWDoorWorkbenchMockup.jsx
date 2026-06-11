@@ -1,6 +1,16 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
-const nodes = {
+import {
+  chapterGroups,
+  fullIntroMessage,
+  initialAbilities,
+  initialLog,
+  maxAbilityTotal,
+  maxSingleAbility,
+  nodes,
+} from "./data/knockBackPlayable.js";
+
+const legacyNodes = {
   door: {
     id: "door",
     title: "Rose 推开的那扇门",
@@ -114,17 +124,17 @@ const nodes = {
   },
 };
 
-const chapterGroups = [
+const legacyChapterGroups = [
   { id: "page-01", label: "Page 1", title: "序章 / 角色准备", page: "start", nodeIds: [] },
   { id: "chapter-01", label: "第 01 幕", title: "打烊后的商场通道", nodeIds: ["door", "listen", "phone", "stepback"] },
   { id: "chapter-02", label: "第 02 幕", title: "门槛", nodeIds: ["pull"] },
 ];
 
-const maxAbilityTotal = 5;
-const maxSingleAbility = 3;
-const fullIntroMessage = ["ROSE OPENED HERS.", "NOW IT’S YOUR TURN."].join(String.fromCharCode(10));
-const initialAbilities = { 感知: 0, 机智: 0, 胆量: 0, 冷静: 0 };
-const initialLog = [
+const legacyMaxAbilityTotal = 5;
+const legacyMaxSingleAbility = 3;
+const legacyFullIntroMessage = ["ROSE OPENED HERS.", "NOW IT’S YOUR TURN."].join(String.fromCharCode(10));
+const legacyInitialAbilities = { 感知: 0, 机智: 0, 胆量: 0, 冷静: 0 };
+const legacyInitialLog = [
   { who: "主持人", text: "商场已经打烊。雨声从天花板上方的通风口里传来。" },
   { who: "主持人", text: "员工通道尽头，一扇蓝门安静地等在那里，像它一直都在。" },
   { who: "系统", text: "节点已载入：Rose 推开的那扇门" },
@@ -156,22 +166,18 @@ function rollD20() {
 }
 
 function getCheck(choice) {
-  const table = {
-    listen: { name: "感知", dc: 12, success: "你听见门后的声音变清楚了。", fail: "你只听见自己的声音从门后重复回来。" },
-    phone: { name: "机智", dc: 10, success: "你抓住了手机异常亮起的那一秒。", fail: "屏幕闪了一下，短信像水渍一样散开。" },
-    pull: { name: "胆量", dc: 14, success: "门顺着你的动作打开，金色光没有立刻吞没你。", fail: "门开了，但你的影子先被吸进了门缝。" },
-    stepback: { name: "冷静", dc: 9, success: "你稳住呼吸，后退时没有把目光从门上移开。", fail: "你退得太快，走廊的出口标识在你身后改变了方向。" },
-    door: { name: "定神", dc: 8, success: "你把自己重新拉回当前的走廊。", fail: "你以为自己回到了原点，但墙上的影子不太对。" },
+  const check = choice.check || {};
+  return {
+    name: check.ability || "冷静",
+    dc: Number(check.dc) || 10,
+    success: choice.smoothText || "行动顺利推进。",
+    fail: choice.blockedText || "行动受阻，但故事继续。",
   };
-  return table[choice.next] || { name: "行动", dc: 10, success: "行动推进。", fail: "行动推进，但代价变得更明显。" };
 }
 
-function getDelta(next, success) {
-  if (next === "pull") return success ? { curiosity: 1, timeStatic: 1 } : { curiosity: 1, fear: 1, timeStatic: 2 };
-  if (next === "stepback") return success ? { fear: 1 } : { fear: 2, timeStatic: 1 };
-  if (next === "listen") return success ? { curiosity: 1, timeStatic: 1 } : { fear: 1, timeStatic: 1 };
-  if (next === "phone") return success ? { curiosity: 1, timeStatic: 1 } : { fear: 1, timeStatic: 1 };
-  return success ? {} : { fear: 1 };
+function getDelta(choice, success) {
+  const delta = success ? choice.smoothDelta : choice.blockedDelta;
+  return delta || {};
 }
 
 function Badge({ children }) {
@@ -264,9 +270,9 @@ function ShadowMotif() {
 
 function SceneMotif({ nodeId, active, tags }) {
   const motif = useMemo(() => {
-    if (nodeId === "phone") return <PhoneMotif />;
-    if (nodeId === "pull") return <ThresholdMotif />;
-    if (nodeId === "stepback") return <ShadowMotif />;
+    if (["tardis-text", "mickey-rules", "tardis-epilogue", "end-records"].includes(nodeId)) return <PhoneMotif />;
+    if (["blue-door", "doctor-voice", "third-knock", "door-releases"].includes(nodeId)) return <ThresholdMotif />;
+    if (["opened-door", "laundrette-epilogue"].includes(nodeId)) return <ShadowMotif />;
     return <DoorMotif active={active} />;
   }, [nodeId, active]);
 
@@ -355,7 +361,7 @@ function HardNavBar({ mode, started, activeChapter, hoveredChapter, chapterMenuO
       <div className="mx-auto flex max-w-[1500px] flex-wrap items-center justify-between gap-2">
         <div>
           <div className="text-[10px] uppercase tracking-[0.24em] text-sky-100/40">Doctor Who Interactive Lab</div>
-          <div className="text-base font-semibold tracking-tight text-slate-100">Rose Door Workbench</div>
+          <div className="text-base font-semibold tracking-tight text-slate-100">KNOCK BACK Workbench</div>
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="rounded-full bg-sky-200 px-3 py-1.5 text-xs text-slate-950">D&D Workbench</span>
@@ -485,9 +491,9 @@ function StartScreen({ abilities, setAbilities, onStart, navProps }) {
                 <span className="h-2 w-2 rounded-full bg-sky-200/75" />
                 序章
               </div>
-              <h1 className="text-[3rem] font-semibold leading-[1.08] tracking-tight">Rose 推开的那扇门</h1>
-              <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-300">商场已经打烊，雨水顺着通风口的边缘往下滴。你只是想穿过员工通道离开，却在本该是水泥墙的地方，看见了一扇蓝色木门。</p>
-              <p className="mt-4 max-w-2xl text-base leading-7 text-slate-400">它太旧了，不像属于这座商场；它又太安静了，像一直在等某个人终于注意到它。你的手机亮起，一条没有发件人的短信躺在屏幕中央：</p>
+              <h1 className="text-[3rem] font-semibold leading-[1.08] tracking-tight">KNOCK BACK / 敲回去</h1>
+              <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-300">Father's Day 当晚，Doctor 把 Rose 送回 Powell Estate。TARDIS 声音消失后，Jackie 的短信亮在手机上：Where are you. Milk. Now.</p>
+              <p className="mt-4 max-w-2xl text-base leading-7 text-slate-400">你买完牛奶回家，经过墙上新划着 BAD WOLF 的洗衣店。里面突然传出 Jackie 的尖叫，还有从空滚筒里传来的三下敲门声：</p>
               <button
                 type="button"
                 onClick={() => setMessageOpened(true)}
@@ -544,7 +550,7 @@ function StartScreen({ abilities, setAbilities, onStart, navProps }) {
             </div>
 
             <button type="button" onClick={startGame} disabled={abilityOverLimit} className="mt-5 h-12 w-full rounded-2xl bg-sky-200 text-sm font-semibold text-slate-950 transition hover:bg-sky-100 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-400">
-              开始进入通道
+              开始进入洗衣店
             </button>
           </Panel>
         </div>
@@ -782,7 +788,7 @@ function MobileGlobalDrawer({
 }
 
 export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
-  const [currentId, setCurrentId] = useState("door");
+  const [currentId, setCurrentId] = useState("laundrette-door");
   const [log, setLog] = useState(initialLog);
   const [mode, setMode] = useState("游玩");
   const [stats, setStats] = useState({ curiosity: 1, fear: 0, timeStatic: 0 });
@@ -826,11 +832,13 @@ export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [mobileDrawerOpen]);
 
-  const node = nodes[currentId] || nodes.door;
+  const node = nodes[currentId] || nodes["laundrette-door"];
   const sceneTimeLabel = formatLocalTime(localNow);
   const activeChapter = chapterGroups.find((chapter) => chapter.nodeIds.includes(currentId)) || chapterGroups[1];
   const hoveredChapter = chapterGroups.find((chapter) => chapter.id === hoveredChapterId) || activeChapter;
-  const doorActive = ["pull", "listen"].includes(currentId) || pendingChoice?.next === "pull";
+  const doorActive =
+    ["blue-door", "doctor-voice", "third-knock", "door-releases", "tardis-epilogue"].includes(currentId) ||
+    ["blue-door", "doctor-voice", "third-knock", "door-releases"].includes(pendingChoice?.next);
   const pendingCheck = pendingChoice ? getCheck(pendingChoice) : null;
   const displayedLog = useMemo(() => {
     const recent = log.slice(-12);
@@ -886,7 +894,7 @@ export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
 
   function returnToPageOne() {
     setHoveredChapterId("page-01");
-    setCurrentId("door");
+    setCurrentId("laundrette-door");
     clearPendingCheck();
     closeChapterMenu();
     setHasStarted(false);
@@ -931,7 +939,7 @@ export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
     const bonus = Number(abilities[check.name]) || 0;
     const total = roll + bonus;
     const success = total >= check.dc;
-    const delta = getDelta(pendingChoice.next, success);
+    const delta = getDelta(pendingChoice, success);
     const resultText = success ? check.success : check.fail;
     const nextNode = nodes[pendingChoice.next] || node;
     const timeLabel = formatLocalTime(localNow);
@@ -960,7 +968,8 @@ export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
     setCheckModal(null);
     if (!window.matchMedia("(max-width: 1024px)").matches) return;
     window.setTimeout(() => {
-      storyTextRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      const storyText = storyTextRef.current || document.querySelector("[data-story-text]");
+      storyText?.scrollIntoView({ behavior: "auto", block: "start" });
     }, 120);
   }
 
@@ -1082,7 +1091,7 @@ export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
 
         <header className="mt-2 flex flex-col gap-3 rounded-3xl border border-white/10 bg-white/[0.03] px-5 py-4 backdrop-blur md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-[2.15rem] font-semibold leading-tight tracking-tight">Rose 推开的那扇门</h1>
+            <h1 className="text-[2.15rem] font-semibold leading-tight tracking-tight">KNOCK BACK / 敲回去</h1>
           </div>
         </header>
 
@@ -1119,7 +1128,7 @@ export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
 
               <div className="grid gap-5 xl:grid-cols-[0.45fr_1.55fr]">
                 <SceneMotif nodeId={node.id} active={doorActive} tags={node.atmosphere} />
-                <div ref={storyTextRef} className="flex flex-col justify-between rounded-3xl border border-white/10 bg-white/[0.035] p-5">
+                <div ref={storyTextRef} data-story-text className="flex flex-col justify-between rounded-3xl border border-white/10 bg-white/[0.035] p-5">
                   <div>
                     <div className="mb-3 text-xs uppercase tracking-[0.24em] text-sky-100/50">{node.location}</div>
                     <p className="text-lg leading-8 text-slate-100/95">{node.text}</p>
