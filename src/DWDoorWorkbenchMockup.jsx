@@ -384,6 +384,7 @@ function HardNavBar({ mode, started, activeChapter, hoveredChapter, chapterMenuO
                       key={chapter.id}
                       type="button"
                       onMouseEnter={() => setHoveredChapterId(chapter.id)}
+                      onClick={() => setHoveredChapterId(chapter.id)}
                       className={`w-full rounded-xl px-3 py-2 text-left transition ${hoveredChapter.id === chapter.id ? "bg-sky-200/15 text-sky-50" : "text-slate-400 hover:bg-white/5 hover:text-slate-200"}`}
                     >
                       <div className="text-xs font-semibold">{chapter.label}</div>
@@ -872,6 +873,7 @@ export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
 
   function openChapterMenu() {
     if (chapterCloseTimer.current) window.clearTimeout(chapterCloseTimer.current);
+    setHoveredChapterId(hasStarted ? activeChapter.id : "page-01");
     setChapterMenuOpen(true);
   }
 
