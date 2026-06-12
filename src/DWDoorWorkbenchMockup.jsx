@@ -355,7 +355,7 @@ function CheckResultModal({ check, onClose }) {
   );
 }
 
-function HardNavBar({ mode, started, activeChapter, hoveredChapter, chapterMenuOpen, openChapterMenu, scheduleCloseChapterMenu, closeChapterMenu, setHoveredChapterId, onPageOne, onSelectNode, onCreator, onReturnPlay, onSoundLab }) {
+function HardNavBar({ mode, started, activeChapter, hoveredChapter, chapterMenuOpen, openChapterMenu, openChapterMenuFromHover, scheduleCloseChapterMenuFromHover, closeChapterMenu, setHoveredChapterId, onPageOne, onSelectNode, onCreator, onReturnPlay, onSoundLab }) {
   return (
     <header className="relative z-40 -mx-4 border-b border-white/10 bg-slate-950/85 px-4 py-2 backdrop-blur md:-mx-6 md:px-6">
       <div className="mx-auto flex max-w-[1500px] flex-wrap items-center justify-between gap-2">
@@ -365,9 +365,11 @@ function HardNavBar({ mode, started, activeChapter, hoveredChapter, chapterMenuO
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="rounded-full bg-sky-200 px-3 py-1.5 text-xs text-slate-950">D&D Workbench</span>
-          <div className="static md:relative" onMouseEnter={openChapterMenu} onMouseLeave={scheduleCloseChapterMenu}>
+          <div className="static md:relative" onMouseEnter={openChapterMenuFromHover} onMouseLeave={scheduleCloseChapterMenuFromHover}>
             <button
               type="button"
+              aria-expanded={chapterMenuOpen}
+              aria-haspopup="menu"
               onClick={() => {
                 if (chapterMenuOpen) closeChapterMenu();
                 else openChapterMenu();
@@ -383,6 +385,7 @@ function HardNavBar({ mode, started, activeChapter, hoveredChapter, chapterMenuO
                     <button
                       key={chapter.id}
                       type="button"
+                      aria-pressed={hoveredChapter.id === chapter.id}
                       onMouseEnter={() => setHoveredChapterId(chapter.id)}
                       onClick={() => setHoveredChapterId(chapter.id)}
                       className={`w-full rounded-xl px-3 py-2 text-left transition ${hoveredChapter.id === chapter.id ? "bg-sky-200/15 text-sky-50" : "text-slate-400 hover:bg-white/5 hover:text-slate-200"}`}
@@ -609,6 +612,7 @@ function LogPanelContent({ displayedLog, log, logOrder, setLogOrder, localNow })
           <span className="font-semibold leading-none">跑团记录</span>
           <button
             type="button"
+            aria-label={logOrder === "oldest" ? "切换为新到旧" : "切换为旧到新"}
             onClick={() => setLogOrder(logOrder === "oldest" ? "newest" : "oldest")}
             title={logOrder === "oldest" ? "当前：旧到新。点击切换为新到旧" : "当前：新到旧。点击切换为旧到新"}
             className="ml-0.5 flex h-[18px] w-[18px] translate-y-[0.5px] items-center justify-center rounded-md text-slate-400 transition hover:bg-white/5 hover:text-sky-100"
@@ -746,11 +750,11 @@ function MobileGlobalDrawer({
   return (
     <div className="fixed inset-0 z-[65] text-slate-100 xl:hidden">
       <button type="button" aria-label="关闭总览面板" onClick={onClose} className="absolute inset-0 bg-slate-950/45 backdrop-blur-[3px]" />
-      <aside className="relative h-full w-[min(88vw,390px)] overflow-y-auto border-r border-white/10 bg-slate-950/90 p-4 shadow-2xl shadow-black/50 backdrop-blur-xl">
+      <aside id="mobile-global-drawer" role="dialog" aria-modal="true" aria-labelledby="mobile-global-drawer-title" className="relative h-full w-[min(88vw,390px)] overflow-y-auto border-r border-white/10 bg-slate-950/90 p-4 shadow-2xl shadow-black/50 backdrop-blur-xl">
         <div className="flex items-center justify-between gap-3">
           <div>
             <div className="text-[10px] uppercase tracking-[0.24em] text-sky-100/45">global</div>
-            <h2 className="mt-1 text-lg font-semibold tracking-tight">总览面板</h2>
+            <h2 id="mobile-global-drawer-title" className="mt-1 text-lg font-semibold tracking-tight">总览面板</h2>
           </div>
           <button type="button" onClick={onClose} className="h-9 rounded-full border border-white/10 bg-white/5 px-3 text-xs text-slate-300 transition hover:bg-white/10">
             关闭
@@ -877,9 +881,23 @@ export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
     setChapterMenuOpen(true);
   }
 
+  function canUseHoverMenu() {
+    return typeof window !== "undefined" && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  }
+
+  function openChapterMenuFromHover() {
+    if (!canUseHoverMenu()) return;
+    openChapterMenu();
+  }
+
   function scheduleCloseChapterMenu() {
     if (chapterCloseTimer.current) window.clearTimeout(chapterCloseTimer.current);
     chapterCloseTimer.current = window.setTimeout(() => setChapterMenuOpen(false), 420);
+  }
+
+  function scheduleCloseChapterMenuFromHover() {
+    if (!canUseHoverMenu()) return;
+    scheduleCloseChapterMenu();
   }
 
   function closeChapterMenu() {
@@ -988,7 +1006,8 @@ export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
     hoveredChapter,
     chapterMenuOpen,
     openChapterMenu,
-    scheduleCloseChapterMenu,
+    openChapterMenuFromHover,
+    scheduleCloseChapterMenuFromHover,
     closeChapterMenu,
     setHoveredChapterId,
     onPageOne: returnToPageOne,
@@ -1084,6 +1103,8 @@ export default function DWDoorWorkbenchMockup({ onOpenSoundLab = () => {} }) {
         <div className="xl:hidden">
           <button
             type="button"
+            aria-controls="mobile-global-drawer"
+            aria-expanded={mobileDrawerOpen}
             onClick={() => setMobileDrawerOpen(true)}
             className="inline-flex h-10 items-center gap-2 rounded-full border border-white/10 bg-slate-950/65 px-4 text-sm font-semibold text-slate-100 shadow-lg shadow-black/20 backdrop-blur transition hover:bg-white/10"
           >
